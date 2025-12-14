@@ -10,25 +10,26 @@ public class Trade_Function {
     BigDecimal tradeAmount;
     BigDecimal opening_factor;
     BigDecimal closing_factor;
-    BigDecimal opening_execution;
-    BigDecimal closing_execution;
+    BigDecimal openingExecution;
+    BigDecimal closingExecution;
     TradeAction action;
     boolean basedOnMarketRate = false; // Default to false (execution-based)
 
 
     // For basedOnMarketRate = false (default), sell/Buy variable is based on execution rate
-    // where sellExecution rate = marketSellRate - (spread/2)
-    // and buyExecution rate = marketBuyRate + (spread/2)
+    // SellExecution rate = marketSellRate - (spread/2)
+    // BuyExecution rate = marketBuyRate + (spread/2)
     // For basedOnMarketRate = true, sell/Buy variable is based on market rate
+    // Execution (Be it sell or buy) rate is the ratio of the qoute commodity to 1 unit of the base commodity within a trade
 
     public Trade_Function(
         TradeAction action, BigDecimal spread,
         BigDecimal ratePK, BigDecimal ratePN, BigDecimal tradeAmount,
-        BigDecimal opening_execution, BigDecimal closing_execution){
+        BigDecimal openingExecution, BigDecimal closingExecution){
         
         this.tradeAmount = tradeAmount;
-        this.opening_execution = opening_execution;
-        this.closing_execution = closing_execution;
+        this.openingExecution = openingExecution;
+        this.closingExecution = closingExecution;
         this.action = action;
         this.spread = spread;
         this.ratePK = ratePK;
@@ -42,12 +43,12 @@ public class Trade_Function {
 
     public void zero_check(){
         if(action == TradeAction.SELL){
-            if(closing_execution.compareTo(BigDecimal.ZERO) == 0){
+            if(closingExecution.compareTo(BigDecimal.ZERO) == 0){
                 throw new ArithmeticException("Closing execution rate cannot be zero for SELL action");
             }
 
         } else if (action == TradeAction.BUY){
-            if(opening_execution.compareTo(BigDecimal.ZERO) == 0){
+            if(openingExecution.compareTo(BigDecimal.ZERO) == 0){
                 throw new ArithmeticException("Opening execution rate cannot be zero for BUY action");
             }
         }
@@ -55,36 +56,36 @@ public class Trade_Function {
 
     public void run_trade_action(){
         if (action == TradeAction.SELL) {
-            // opening_execution is the opening sell rate
-            // closing_execution is the closing buy rate
+            // openingExecution is the opening sell rate
+            // closingExecution is the closing buy rate
             BigDecimal adjOpen = basedOnMarketRate
-                    ? opening_execution
-                    : opening_execution.subtract(spread.divide(BigDecimal.valueOf(2), 10, RoundingMode.HALF_UP));
+                    ? openingExecution
+                    : openingExecution.subtract(spread.divide(BigDecimal.valueOf(2), 10, RoundingMode.HALF_UP));
             BigDecimal adjClose = basedOnMarketRate
-                    ? closing_execution
-                    : closing_execution.add(spread.divide(BigDecimal.valueOf(2), 10, RoundingMode.HALF_UP));
+                    ? closingExecution
+                    : closingExecution.add(spread.divide(BigDecimal.valueOf(2), 10, RoundingMode.HALF_UP));
 
-            this.opening_execution = adjOpen;
-            this.closing_execution = adjClose;
+            this.openingExecution = adjOpen;
+            this.closingExecution = adjClose;
 
-            this.opening_factor = this.opening_execution;
-            this.closing_factor = BigDecimal.ONE.divide(this.closing_execution, 10, RoundingMode.HALF_UP);
+            this.opening_factor = this.openingExecution;
+            this.closing_factor = BigDecimal.ONE.divide(this.closingExecution, 10, RoundingMode.HALF_UP);
 
         } else if (action == TradeAction.BUY) {
-            // opening_execution is the opening buy rate
-            // closing_execution is the closing sell rate
+            // openingExecution is the opening buy rate
+            // closingExecution is the closing sell rate
             BigDecimal adjOpen = basedOnMarketRate
-                    ? opening_execution
-                    : opening_execution.add(spread.divide(BigDecimal.valueOf(2), 10, RoundingMode.HALF_UP));
+                    ? openingExecution
+                    : openingExecution.add(spread.divide(BigDecimal.valueOf(2), 10, RoundingMode.HALF_UP));
             BigDecimal adjClose = basedOnMarketRate
-                    ? closing_execution
-                    : closing_execution.subtract(spread.divide(BigDecimal.valueOf(2), 10, RoundingMode.HALF_UP));
+                    ? closingExecution
+                    : closingExecution.subtract(spread.divide(BigDecimal.valueOf(2), 10, RoundingMode.HALF_UP));
 
-            this.opening_execution = adjOpen;
-            this.closing_execution = adjClose;
+            this.openingExecution = adjOpen;
+            this.closingExecution = adjClose;
 
-            this.opening_factor = BigDecimal.ONE.divide(this.opening_execution, 10, RoundingMode.HALF_UP);
-            this.closing_factor = this.closing_execution;
+            this.opening_factor = BigDecimal.ONE.divide(this.openingExecution, 10, RoundingMode.HALF_UP);
+            this.closing_factor = this.closingExecution;
         } else {
             throw new IllegalArgumentException("Unsupported TradeAction: " + action);
         }
