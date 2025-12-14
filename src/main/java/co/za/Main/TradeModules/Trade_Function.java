@@ -19,8 +19,9 @@ public class Trade_Function {
     // For basedOnMarketRate = false (default), sell/Buy variable is based on execution rate
     // SellExecution rate = marketSellRate - (spread/2)
     // BuyExecution rate = marketBuyRate + (spread/2)
-    // For basedOnMarketRate = true, sell/Buy variable is based on market rate
+    // basedOnMarketRate = true, sell/Buy variable is based on market rate
     // Execution (Be it sell or buy) rate is the ratio of the qoute commodity to 1 unit of the base commodity within a trade
+    // Trade calculation us ethe opening and closing rates adjusted for spread if basedOnMarketRate is false
 
     public Trade_Function(
         TradeAction action, BigDecimal spread,
